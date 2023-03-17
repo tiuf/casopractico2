@@ -1,0 +1,13 @@
+---
+- name: 'Playbook Webserver'
+  hosts: webservers
+  remote_user: azureuser
+  become: true
+  vars_files:
+    - /etc/ansible/env_vars/environment.env
+  gather_facts: yes
+  vars:
+    ansible_message: "Executing role subirimagen on hosts webservers"
+  roles:
+    - subirimagen
+
