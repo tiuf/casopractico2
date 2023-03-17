@@ -1,1 +1,8 @@
+[webservers]
+#He puesto en el fichero host un alias de la ip publica al nombre de webserver, por eso utilizo diractemente este alias.
+webserver
+
+[AKS]
+#He puesto en el fichero host un alias de la ip publica al nombre de aks, por eso utilizo diractemente este alias.
+aks
 
