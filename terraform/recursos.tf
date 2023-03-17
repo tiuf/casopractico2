@@ -1,4 +1,3 @@
-
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location_name
@@ -22,6 +21,7 @@ resource "azurerm_container_registry" "acr1" {
   admin_enabled       = true
         }
 
+#Despliegue de la red virtual de azure
 resource "azurerm_virtual_network" "vnet" {
   name                = var.network_name
   address_space       = ["10.0.0.0/16"]
@@ -29,6 +29,7 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
+#Despliegue de la subred
 resource "azurerm_subnet" "subnet" {
   name                 = var.subnet_name
   resource_group_name  = azurerm_resource_group.rg.name
@@ -36,6 +37,7 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.2.0/24"]
 }
 
+#Despliegue de la interfaz de red vnic
 resource "azurerm_network_interface" "nic" {
   name                = "vnic"
   location            = azurerm_resource_group.rg.location
@@ -48,7 +50,7 @@ resource "azurerm_network_interface" "nic" {
     public_ip_address_id          = azurerm_public_ip.pip.id
   }
 }
-#IP PUBLICA
+#En esta parte creamos la dirección IP Publica.
 resource "azurerm_public_ip" "pip" {
   name                = "vip"
   resource_group_name = azurerm_resource_group.rg.name
@@ -59,7 +61,9 @@ resource "azurerm_public_ip" "pip" {
     environment = "Production"
   }
 }
-#VM1 Webserver
+#Desplegamos la maquina virtual VM1 que utilizaremos para la parte del Webserver
+
+#Levantamos maquina virtual
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = "vm1"
   resource_group_name = azurerm_resource_group.rg.name
@@ -69,24 +73,24 @@ resource "azurerm_linux_virtual_machine" "vm" {
   network_interface_ids = [
     azurerm_network_interface.nic.id,
   ]
-
+#Indicamos que usuario podra acceder por ssh y la ubicacion de la clave publica
   admin_ssh_key {
     username   = "azureuser"
     public_key = file("~/.ssh/id_rsa.pub")
   }
-
+#Tipo de disco 
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
-
+#Plan de la maquina virtual y producto
   plan {
     name      = "centos-8-stream-free"
     product   = "centos-8-stream-free"
     publisher = "cognosys"
   }
 
-
+#Origen de la imagen a utilizar
   source_image_reference {
     publisher = "cognosys"
     offer     = "centos-8-stream-free"
@@ -94,6 +98,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "22.03.28"
   }
 }
+#Creamos un grupo de seguridad para la red para el puerto 22
 resource "azurerm_network_security_group" "nsg1" {
   name                = "securitygroup"
   location            = azurerm_resource_group.rg.location
@@ -111,12 +116,12 @@ resource "azurerm_network_security_group" "nsg1" {
     destination_address_prefix = "*"
   }
  }
-
+#Creamos un grupo de seguridad de la subred enlazado al grupo de seguridad anterior.
 resource "azurerm_subnet_network_security_group_association" "nsg-link" {
    subnet_id                 = azurerm_subnet.subnet.id
    network_security_group_id = azurerm_network_security_group.nsg1.id
 }
-
+#Creamos una regla de red para el puerto 8080
 resource "azurerm_network_security_rule" "http" {
   name                        = "http"
   priority                    = 1002
@@ -131,23 +136,23 @@ resource "azurerm_network_security_rule" "http" {
   network_security_group_name = azurerm_network_security_group.nsg1.name
  }
 
-#AKS1
+#En esta parte del codigo desplegamos el cluster de kubernetes con aks con un nodo.
 resource "azurerm_kubernetes_cluster" "casopractico2_aks" {
   name                = "aks1"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   dns_prefix          = "aks1"
-
+#Definimos cuandos nodos y el tipo de vm_size a utilizar
   default_node_pool {
     name       = "default"
     node_count = 1
     vm_size    = "Standard_D2_v2"
   }
-
+#Identidad
   identity {
     type = "SystemAssigned"
   }
-
+#Tag a utilizar
   tags = {
     Environment = "Production"
   }
