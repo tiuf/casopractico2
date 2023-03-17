@@ -1,13 +1,14 @@
 ---
+#En este playbook seleccionamos los hosts que estan dentro de webservers, indicamos con que usuario haremos la accion, seleccionamos el 
 - name: 'Playbook Webserver'
-  hosts: webservers
-  remote_user: azureuser
+  hosts: webservers  #Indicamos que los hosts a aplicar el playbook son los del grupo webservers
+  remote_user: azureuser #Indicamos el usuario con el que realizaremos la acción, en este caso es el usuario azureuser que previamente hemos indicado en el despliegue de la maquina vm1
   become: true
-  vars_files:
+  vars_files: #Indicamos el fichero de variables
     - /etc/ansible/env_vars/environment.env
   gather_facts: yes
   vars:
     ansible_message: "Executing role subirimagen on hosts webservers"
-  roles:
+  #Indicamos el role a utilizar
+  roles: 
     - subirimagen
-
