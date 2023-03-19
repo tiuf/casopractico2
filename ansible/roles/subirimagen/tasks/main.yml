@@ -20,7 +20,8 @@
   containers.podman.podman_image:
     name: casopractico2webserver.azurecr.io/webserver:casopractico2
 
-#En esta parte se levanta un container con podman con la imagen que previamente hemos hecho el pull.
+#En esta parte se levanta un container con podman con la imagen que previamente hemos hecho el pull y redirigimos el puerto 8080 al 443
+
 - name: Start a container
   containers.podman.podman_container:
     name: webserver
