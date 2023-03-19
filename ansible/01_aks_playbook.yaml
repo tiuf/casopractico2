@@ -1,10 +1,11 @@
-                                                                                                                                       01_aks_playbook.yaml
----
+#Nombre del playbook
 - name: 'Playbook Kubernetes AKS'
+#Hosts donde se ejecutara
   hosts: localhost
+#Fichero de variables a utilizar
   vars_files:
     - /etc/ansible/env_vars/varaks.env
-
+#Tareas a ejecutar
   tasks:
     - name: 'Definir los objectos deployment y servicios'
       template:
